@@ -1,20 +1,19 @@
-name: Terraform                               # workflow name
+name: Terraform
 
 on:
-  push:                                       
-    branches:                                 # similar to "only" in GitLab
+  push:
+    branches:
       - main
 
 jobs:
-build:
-  tflint:
-    runs-on: ubuntu-20.04
+  build:                               # Correctly aligns the job name
+    runs-on: ubuntu-20.04             # "tflint" was mistakenly under "build", fixed it
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - uses: terraform-linters/setup-tflint@v1
-        name: Setup TFLint
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v1
         with:
           tflint_version: latest
 
@@ -22,28 +21,33 @@ build:
         run: tflint --chdir=aws -f json > tflint-output.json
         continue-on-error: true
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload TFLint Output
+        uses: actions/upload-artifact@v2
         with:
           name: TFLint
           path: tflint-output.json
-        if: always()                        # what is this for?
+        if: always()                  # Ensures the artifact is uploaded even if previous steps fail
 
   test:
     runs-on: ubuntu-20.04
-    needs: build
+    needs: build                      # Ensures "test" runs only after "build"
     steps:
-      - run: echo "This is a test step"
+      - name: Run Test Step
+        run: echo "This is a test step"
 
   integration:
     runs-on: ubuntu-20.04
-    needs: test
+    needs: test                       # Ensures "integration" runs only after "test"
     steps:
-      - run: echo "This is an integration step"
-      - run: exit 1
+      - name: Run Integration Step
+        run: echo "This is an integration step"
+      - name: Simulate Failure with Continue-on-error
+        run: exit 1
         continue-on-error: true
 
   prod:
     runs-on: ubuntu-20.04
-    needs: integration
+    needs: integration                # Ensures "prod" runs only after "integration"
     steps:
-      - run: echo "This is a deploy step"
+      - name: Deploy Step
+        run: echo "This is a deploy step"
