@@ -6,6 +6,12 @@ on:
       - main
 
 jobs:
+
+  build:
+    runs-on: ubuntu-20.04                    # similar to "image" in GitLab
+    steps:
+      - run: echo "This is a build step"
+      
   terrascan:
     runs-on: ubuntu-20.04
     steps:
